@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пробковая доска благодарности</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            /* Текстура пробки (через CSS-градиенты и шум) */
+            background-color: hwb(0 0% 100% / 0.253);
+            background-image: 
+                radial-gradient(circle at 2px 2px, rgba(0,0,0,0.1) 1px, transparent 0);
+            background-size: 4px 4px;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        /* Рама доски */
+        .board-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #a67458; /* Цвет дерева */
+            padding: 15px;
+            border: 12px solid #5d3a1a;
+            border-radius: 10px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            min-height: 80vh;
+            position: relative;
+        }
+
+        /* Поверхность пробки */
+        .cork {
+            background: hsl(30, 38%, 42%);
+            border: 2px inset rgba(0,0,0,0.2);
+            min-height: 75vh;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            align-content: flex-start;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .input-panel {
+            background: rgba(255,255,255,0.9);
+            padding: 15px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        input { padding: 10px; border: 1px solid #ccc; width: 250px; }
+        button { padding: 10px 20px; cursor: pointer; background: #5d3a1a; color: white; border: none; border-radius: 3px; }
+
+        /* Стили листочка */
+        .note {
+            width: 180px;
+            min-height: 160px;
+            padding: 20px;
+            position: relative;
+            background: #fff59d; /* Желтый цвет стикера */
+            box-shadow: 5px 10px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #333;
+            transition: transform 0.2s;
+        }
+
+        /* Иголка (кнопка) */
+        .pin {
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(circle at 5px 5px, #ff4d4d, #8b0000);
+            border-radius: 50%;
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            z-index: 10;
+        }
+
+        .pin::after {
+            content: '';
+            width: 2px;
+            height: 5px;
+            background: rgba(0,0,0,0.2);
+            position: absolute;
+            bottom: -3px;
+            left: 6px;
+        }
+
+        /* Поворот каждого второго листочка для реализма */
+        .note:nth-child(even) { transform: rotate(2deg); background: lab(37.29% 72.88 -66.03); }
+        .note:nth-child(3n) { transform: rotate(-3deg); background: hsl(175, 100%, 50%); }
+        .note:nth-child(4n) { transform: rotate(1deg); background: hwb(88 0% 0%); }
+        
+        .note:hover { transform: scale(1.1) rotate(0deg); z-index: 20; cursor: pointer; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Стена благодарности 2025</h1>
+        <div class="input-panel">
+            <input type="text" id="noteInput" placeholder="Напишите что-то хорошее...">
+            <button onclick="addNote()">Приколоть!</button>
+        </div>
+    </header>
+
+    <div class="board-container">
+        <div class="cork" id="board">
+            <!-- Сюда будут добавляться заметки -->
+        </div>
+    </div>
+
+<script>
+    const board = document.getElementById('board');
+    const input = document.getElementById('noteInput');
+    // Загрузка заметок из памяти браузера
+    let notes = JSON.parse(localStorage.getItem('my_gratitude_notes')) || [];
+    render();
+
+    function addNote() {
+        const text = input.value.trim();
+        if (text === "") return;
+
+        notes.push(text);
+        localStorage.setItem('my_gratitude_notes', JSON.stringify(notes));
+        input.value = "";
+        render();
+    }
+
+    function render() {
+        board.innerHTML = "";
+        notes.forEach((text, index) => {
+            const noteDiv = document.createElement('div');
+            noteDiv.className = 'note';
+            
+            // Добавляем иголку
+            const pin = document.createElement('div');
+            pin.className = 'pin';
+            
+            noteDiv.appendChild(pin);
+            noteDiv.insertAdjacentText('beforeend', text);
+
+            // Удаление по клику (как будто сняли листочек)
+            noteDiv.onclick = () => {
+                if(confirm("Снять этот листочек с доски?")) {
+                    notes.splice(index, 1);
+                    localStorage.setItem('my_gratitude_notes', JSON.stringify(notes));
+                    render();
+                }
+            };
+
+            board.appendChild(noteDiv);
+        });
+    }
+</script>
+
+</body>
+</html>
